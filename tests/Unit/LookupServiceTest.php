@@ -26,7 +26,6 @@ class LookupServiceTest extends TestCase
     {
         $result = $this->service->lookup('invalid_type', ['username' => 'testuser']);
 
-        var_dump($result);
         $this->assertArrayHasKey('success', $result);
         $this->assertFalse($result['success']);
         $this->assertEquals('Unsupported lookup type', $result['error']);
