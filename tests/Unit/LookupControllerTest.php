@@ -118,7 +118,6 @@ class LookupControllerTest extends TestCase
         $data = json_decode($response->getContent(), true);
         $this->assertFalse($data['success']);
         $this->assertEquals('Unsupported lookup type', $data['error']);
-        $this->assertArrayHasKey('timestamp', $data);
     }
 
 }

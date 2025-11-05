@@ -1,11 +1,10 @@
-<?php declare(strict_types=1);
+<?php declare (strict_types = 1);
 
 namespace App\Http\Controllers;
 
 use App\Services\LookupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 
 /**
  * Class LookupController
@@ -21,9 +20,9 @@ class LookupController extends Controller
         $this->lookupService = $lookupService;
     }
 
-    public function lookup(Request $request) : JsonResponse
+    public function lookup(Request $request): JsonResponse
     {
-        $type = (string) $request->get('type', '');
+        $type     = (string) $request->get('type', '');
         $username = $request->get('username', false);
         $userId   = $request->get('id', false);
 
@@ -38,19 +37,20 @@ class LookupController extends Controller
         try {
             $result = $this->lookupService->lookup($type, [
                 'username' => $username,
-                'id' => $userId,
+                'id'       => $userId,
             ]);
 
         } catch (\InvalidArgumentException $e) {
-            return response()->json([ 'success' => false, 'error' => $e->getMessage()], 422);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
         }
 
-         if ($result === null || isset($result['error'])) {
+        if ($result === null || isset($result['error'])) {
             return response()->json(
                 [
-                    'success' => false, 
-                    'error' => $result === null ? 'No result found' : $result['error'], 
-                    'timestamp' => now()->toIso8601String()
+                    'success' => false,
+                    'error'   => $result === null
+                        ? 'No matching records were found for the input provided.'
+                        : sprintf('Lookup failed: %s. Please check the input and try again.', $result['error']),
                 ], $result === null ? 404 : 422
             );
         }
