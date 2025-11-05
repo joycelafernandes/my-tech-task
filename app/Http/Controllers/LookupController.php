@@ -55,6 +55,6 @@ class LookupController extends Controller
             );
         }
 
-        return response()->json(['success' => true] + $result);
+        return response()->json(['success' => true] + $result, 200);
     }
 }
