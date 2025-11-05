@@ -20,6 +20,12 @@ class LookupController extends Controller
         $this->lookupService = $lookupService;
     }
 
+    /**
+     * Handle a lookup request.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function lookup(Request $request): JsonResponse
     {
         $type     = (string) $request->get('type', '');

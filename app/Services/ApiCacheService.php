@@ -4,6 +4,9 @@ namespace App\Services;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service for caching API responses.
+ */
 class ApiCacheService
 {
     /**

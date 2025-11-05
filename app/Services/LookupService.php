@@ -7,6 +7,9 @@ use InvalidArgumentException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service to handle user lookups across multiple providers.
+ */
 class LookupService
 {
     private array $lookupProviders;
@@ -19,6 +22,13 @@ class LookupService
         $this->lookupProviders = $lookupProviders;
     }
 
+    /**
+     * Perform a lookup based on type and parameters.
+     *
+     * @param string $type The type of lookup (e.g., 'minecraft', 'steam')
+     * @param array $params Parameters for the lookup (e.g., 'username', 'id')
+     * @return array|null
+     */
     public function lookup(string $type, array $params): ?array
     {
         try {

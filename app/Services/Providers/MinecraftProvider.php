@@ -8,6 +8,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Minecraft Lookup Provider
+ */
 class MinecraftProvider implements LookupProviderInterface
 {
     private Client $client;
@@ -21,6 +24,12 @@ class MinecraftProvider implements LookupProviderInterface
         $this->apiCache = $apiCache;
     }
 
+    /**
+     * Find user by username.
+     *
+     * @param string $username
+     * @return array|null
+     */
     public function findByUsername(string $username): ?array
     {
         $cacheKey = self::CACHE_PREFIX . "profile_{$username}";
@@ -39,6 +48,12 @@ class MinecraftProvider implements LookupProviderInterface
 
     }
 
+    /**
+     * Find user by user ID.
+     *
+     * @param string $id
+     * @return array|null
+     */
     public function findByUserId(string $id): ?array
     {
         $cacheKey = self::CACHE_PREFIX . "user_{$id}";
@@ -57,17 +72,30 @@ class MinecraftProvider implements LookupProviderInterface
         });
     }
 
+    /**
+     * Parse the API response.
+     *
+     * @param string $response
+     * @return object|null
+     */
     private function parseResponse(string $response): ?object
     {
         $data = json_decode($response);
 
         if (! isset($data->id, $data->name)) {
+            Log::warning('Response missing required fields', ['response' => $response]);
             return null;
         }
 
         return $data;
     }
 
+    /**
+     * Format the result into a consistent array structure.
+     *
+     * @param object|null $data
+     * @return array|null
+     */
     private function formatResult(?object $data): ?array
     {
         if ($data === null) {

@@ -8,6 +8,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Steam Lookup Provider
+ */
 class SteamProvider implements LookupProviderInterface
 {
     private Client $client;
@@ -20,11 +23,23 @@ class SteamProvider implements LookupProviderInterface
         $this->apiCache = $apiCache;
     }
 
+    /**
+     * Find user by username.
+     *
+     * @param string $username
+     * @return array|null
+     */
     public function findByUsername(string $username): ?array
     {
         return ['error' => 'Steam only supports IDs'];
     }
 
+    /**
+     * Find user by user ID.
+     *
+     * @param string $id
+     * @return array|null
+     */
     public function findByUserId(string $id): ?array
     {
         $cacheKey = "steam_user_{$id}";
@@ -45,6 +60,7 @@ class SteamProvider implements LookupProviderInterface
                 ];
 
             } catch (GuzzleException $e) {
+
                 Log::error('Request failed', ['error' => $e->getMessage()]);
                 throw $e;
             }
