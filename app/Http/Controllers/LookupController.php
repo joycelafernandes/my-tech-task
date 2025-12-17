@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\LookupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class LookupController
@@ -28,39 +29,63 @@ class LookupController extends Controller
      */
     public function lookup(Request $request): JsonResponse
     {
-        $type     = (string) $request->get('type', '');
-        $username = $request->get('username', false);
-        $userId   = $request->get('id', false);
+        $data = $request->validate([
+            'type'     => 'required|string',
+            'username' => 'nullable|string',
+            'id'       => 'nullable|string',
+        ]);
 
-        if (empty($type)) {
-            return response()->json(['success' => false, 'error' => 'Type is required'], 422);
-        }
+        $username = $data['username'] ?? null;
+        $userId   = $data['id'] ?? null;
 
         if (empty($username) && empty($userId)) {
-            return response()->json(['success' => false, 'error' => 'Username or ID required'], 422);
-        }
-
-        try {
-            $result = $this->lookupService->lookup($type, [
-                'username' => $username,
-                'id'       => $userId,
-            ]);
-
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
-        }
-
-        if ($result === null || isset($result['error'])) {
             return response()->json(
                 [
                     'success' => false,
-                    'error'   => $result === null
-                        ? 'No matching records were found for the input provided.'
-                        : sprintf('Lookup failed: %s. Please check the input and try again.', $result['error']),
-                ], $result === null ? 404 : 422
+                    'error'   => 'Username or ID required',
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
             );
         }
 
-        return response()->json(['success' => true] + $result, 200);
+        try {
+            $result = $this->lookupService->lookup($data['type'], [
+                'username' => $username,
+                'id'       => $userId,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(
+                [
+                    'success'   => false,
+                    'error'     => $e->getMessage(),
+                    'timestamp' => now()->toIso8601String(),
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        if ($result === null) {
+            return response()->json(
+                [
+                    'success'   => false,
+                    'error'     => 'No matching records were found for the input provided.',
+                    'timestamp' => now()->toIso8601String(),
+                ],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        if (isset($result['success']) && $result['success'] === false && isset($result['error'])) {
+            return response()->json(
+                [
+                    'success'   => false,
+                    'error'     => $result['error'],
+                    'timestamp' => now()->toIso8601String(),
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        return response()->json(array_merge(['success' => true], $result), Response::HTTP_OK);
     }
 }
